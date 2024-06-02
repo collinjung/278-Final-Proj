@@ -68,7 +68,11 @@ const Post = ({ postID, source }) => {
           style={styles.postReactContainer}
           onPress={handleReact}
         >
-          <Text style={styles.textBody}>🥳</Text>
+          <FontAwesome
+            name="heart"
+            size={18}
+            color={reacted ? "red" : "white"}
+          />
           <Text style={styles.textBody}>{reactCount}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -91,7 +95,7 @@ const Post = ({ postID, source }) => {
             style={{ marginRight: 5 }}
           />
           <Text style={styles.textBody}>
-            {eventAdded ? "added!" : "add event"}
+            {eventAdded ? "added!" : "add to schedule"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -143,16 +147,17 @@ const Post = ({ postID, source }) => {
             18+, valid Stanford student ID required
           </Text>
         </View>
-        <View style={[styles.postContentComponents, { paddingBottom: 0 }]}>
+        <View
+          style={[styles.postContentComponents, { alignItems: "flex-start" }]}
+        >
           <Ionicons
             name="information-circle"
             size={18}
             color="white"
             style={{ marginRight: 5 }}
           />
-          <Text style={styles.textBody}>
-            Come hear your favorite student bands! Wear your favorite band merch
-            🎸🎤
+          <Text style={[styles.textBody, { marginRight: 15 }]}>
+            Share your favorite student band in the comments!
           </Text>
         </View>
       </View>

@@ -1,13 +1,14 @@
 import { Stack } from "expo-router";
 
-export default function ScheduleLayout() {
+export default function EventsLayout() {
   return (
     <Stack
       screenOptions={{
-        headerBackTitleVisible: true,
+        headerBackTitleVisible: false,
         headerBackTitleStyle: {
           backgroundColorolor: "white",
         },
+        headerBackVisible: true,
         headerShown: true,
         headerStyle: {
           backgroundColor: "black",
@@ -23,13 +24,14 @@ export default function ScheduleLayout() {
       <Stack.Screen
         name="index"
         options={{
-          headerTitle: "schedule",
+          headerTitle: "what's bubble?",
+          headerBackVisible: true,
         }}
       />
       <Stack.Screen
-        name="seePost"
+        name="signUpInfo"
         options={{
-          headerTitle: "view event",
+          headerTitle: "sign up",
         }}
       />
     </Stack>

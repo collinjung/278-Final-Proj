@@ -72,6 +72,7 @@ const ProfileContent = ({ userID, username, userType, image }) => {
                 fontSize: 20,
                 color: "white",
                 fontWeight: "bold",
+                fontFamily: "gill sans",
               }}
             >
               my posts

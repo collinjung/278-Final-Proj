@@ -57,7 +57,11 @@ export default function Page() {
   };
   let shown = null;
   if (!image) {
-    shown = <Text style={{ color: "gray", fontSize: 20 }}>⇧ upload image</Text>;
+    shown = (
+      <Text style={{ color: "gray", fontSize: 20, fontFamily: "gill sans" }}>
+        ⇧ upload image
+      </Text>
+    );
   }
 
   const handleDateChange = (event, selectedDate) => {
@@ -248,18 +252,19 @@ export default function Page() {
             <View style={styles.newPostInfoContainer}>
               <Text style={[styles.textTitle, { margin: 5 }]}>
                 make sure your post follows our
-                <Pressable onPress={() => setModalVisible(true)}>
-                  <Text
-                    style={{
-                      color: "rgba(124, 47, 202, 0.8)",
-                      fontWeight: "bold",
-                      fontSize: 15,
-                      marginTop: 5,
-                    }}
-                  >
-                    community guidelines
-                  </Text>
-                </Pressable>
+                <Text
+                  style={{
+                    color: "rgba(124, 47, 202, 0.8)",
+                    fontWeight: "bold",
+                    fontSize: 16,
+                    marginTop: 5,
+                    textDecorationLine: "underline",
+                    fontFamily: "gill sans",
+                  }}
+                  onPress={() => setModalVisible(true)}
+                >
+                  community guidelines
+                </Text>
               </Text>
               <CommunityGuidelines
                 visible={modalVisible}

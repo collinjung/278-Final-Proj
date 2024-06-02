@@ -14,6 +14,7 @@ export default function ScheduleLayout() {
         headerTitleStyle: {
           color: "white",
           fontWeight: "bold",
+          fontFamily: "gill sans",
         },
         headerTintColor: "#bfbdbd",
       }}

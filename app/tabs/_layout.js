@@ -22,6 +22,7 @@ export default function Layout() {
         },
         tabBarTitleStyle: {
           color: "white",
+          fontFamily: "gill sans",
         },
         tabBarItemStyle: {
           justifyContent: "center",
@@ -32,6 +33,7 @@ export default function Layout() {
         },
         headerTitleStyle: {
           color: "white",
+          fontFamily: "gill sans",
         },
       }}
     >

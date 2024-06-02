@@ -15,6 +15,7 @@ export default function EventsLayout() {
         headerTitleStyle: {
           color: "white",
           fontWeight: "bold",
+          fontFamily: "gill sans",
         },
         headerTintColor: "#bfbdbd",
       }}

@@ -11,6 +11,20 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
+        name="login"
+        options={{
+          headerShown: false,
+          headerBackVisible: true,
+        }}
+      />
+      <Stack.Screen
+        name="signUp"
+        options={{
+          headerShown: false,
+          headerBackVisible: true,
+        }}
+      />
+      <Stack.Screen
         name="tabs"
         options={{
           headerShown: false,
