@@ -1,7 +1,5 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage})
 const { createClient } = require('@supabase/supabase-js');
 
 dotenv.config();
@@ -20,6 +18,22 @@ app.use(express.json());
 app.post('/api/register', async (req, res) => {
   const { email, username, password, hostStatus } = req.body;
   const profilePicture = req.file;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
+  }
+
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+
+  if (!hostStatus) {
+    return res.status(400).json({ error: 'Host status is required' });
+  }
 
   // Stanford email check
   if (!email.endsWith('@stanford.edu')) {
@@ -32,6 +46,15 @@ app.post('/api/register', async (req, res) => {
     .select('id')
     .eq('email', email)
     .single();
+
+  if (emailError && emailError.code !== 'PGRST116') {
+    console.error('Error checking email:', emailError);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+
+  if (existingEmail) {
+    return res.status(400).json({ error: 'Email already in use' });
+  }
 
   // unique username check
   const { data: existingUser, error } = await supabase
@@ -49,21 +72,25 @@ app.post('/api/register', async (req, res) => {
     return res.status(400).json({ error: 'Username already taken' });
   }
 
-  // upload profile picture to Supa storage / keep track of it 
-  let profilePictureUrl = null; 
+  // (ISN'T WORKING) upload profile picture to Supa storage / keep track of it
+  let profilePictureUrl = null;
   if (profilePicture) {
-    const { data, error: uploadError } = await supabase
-      .storage
+    const filePath = `profile-pictures/${username}_${Date.now()}.jpg`;
+    const contentType = 'image/jpeg';
+    const base64Image = profilePicture.split(',')[1];
+    const imageBuffer = Buffer.from(base64Image, 'base64');
+  
+    const { data, error: uploadError } = await supabase.storage
       .from('profile-pictures')
-      .upload(`${username}_${Date.now()}.jpg`, profilePicture.buffer, {
-        contentType: profilePicture.mimetype,
+      .upload(filePath, imageBuffer, {
+        contentType,
       });
-
+  
     if (uploadError) {
-      console.error('Error uploading profile picture:', uploadError);
+      console.error('Error uploading profile picture:', uploadError.message);
       return res.status(500).json({ error: 'Internal server error' });
     }
-
+  
     profilePictureUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profile-pictures/${data.path}`;
   }
 
@@ -102,7 +129,7 @@ app.post('/api/login', async (req, res) => {
   }
 
   // password is correct, user is authenticated
-  return res.status(200).json({ message: 'Login successful', user });
+  return res.status(200).json({ message: 'Login successful', user: user });
 });
 
 // profile retrieval endpt
@@ -125,96 +152,124 @@ app.get('/api/users/:userId', async (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  return res.status(200).json({ user });
+  // (ISN'T WORKING) retrieve profile picture from Supabase storage
+  if (user.profilePictureUrl) {
+    const { publicURL, error: publicUrlError } = supabase.storage
+      .from('profile-pictures')
+      .getPublicUrl(user.profilePictureUrl.replace(`${process.env.SUPABASE_URL}/storage/v1/object/public/`, ''));
+  
+    if (publicUrlError) {
+      console.error('Error retrieving public URL:', publicUrlError.message);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  
+    user.profilePictureUrl = publicURL;
+  }
+
+  return res.status(200).json({ user: user });
 });
 
-// update to "host" status 
-app.put('/api/users/:userId/host', async (req, res) => {
+// profile update endpt
+app.put('/api/users/:userId/update', async (req, res) => {
   const userId = req.params.userId;
-  const { isAdmin } = req.body;
+  const { username, email, password, hostStatus, profilePicture } = req.body;
 
-  // check if the requester is authorized admin
-  if (!isAdmin) {
-    return res.status(403).json({ error: 'Unauthorized' });
+  // Stanford email check
+  if (email && !email.endsWith('@stanford.edu')) {
+    return res.status(400).json({ error: 'Invalid email. Must use a Stanford email.' });
   }
 
-  // update user's host status to "host"
-  const { data: updatedUser, error } = await supabase
-    .from('users')
-    .update({ hostStatus: 'host' })
-    .eq('hostStatus', 'pending host')
-    .single();
+  // unique email check
+  if (email) {
+    const { data: existingEmail, error: emailError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .neq('id', userId)
+      .single();
 
-  if (error) {
-    console.error('Error updating user host status:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    if (emailError && emailError.code !== 'PGRST116') {
+      console.error('Error checking email:', emailError);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    if (existingEmail) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
   }
 
-  if (!updatedUser) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  return res.status(200).json({ message: 'User host status updated successfully', user: updatedUser });
-});
-
-app.put('/api/users/:userId/profile', upload.single('profilePicture'), async (req, res) => {
-  const userId = req.params.userId;
-  const { username } = req.body;
-  const profilePicture = req.file;
-
-  try {
-    // check if the username is already taken by another user
-    const { data: existingUser, error: usernameError } = await supabase
+  // unique username check
+  if (username) {
+    const { data: existingUser, error } = await supabase
       .from('users')
       .select('id')
       .eq('username', username)
       .neq('id', userId)
       .single();
 
-    if (usernameError && usernameError.code !== 'PGRST116') {
-      console.error('Error checking username:', usernameError);
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error checking username:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
 
     if (existingUser) {
       return res.status(400).json({ error: 'Username already taken' });
     }
+  }
 
-    // update the user's profile picture if a new one is provided
-    let profilePictureUrl = null;
-    if (profilePicture) {
-      const { data, error: uploadError } = await supabase
-        .storage
-        .from('profile-pictures')
-        .upload(`${userId}_${Date.now()}.jpg`, profilePicture.buffer, {
-          contentType: profilePicture.mimetype,
-        });
+  // validate host status
+  if (hostStatus && !['attendee', 'pending host', 'host'].includes(hostStatus)) {
+    return res.status(400).json({ error: 'Invalid host status' });
+  }
 
-      if (uploadError) {
-        console.error('Error uploading profile picture:', uploadError);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-
-      profilePictureUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profile-pictures/${data.path}`;
-    }
-
-    // update user's username and profile picture URL in the database
-    const { data: updatedUser, error: updateError } = await supabase
-      .from('users')
-      .update({ username, profilePictureUrl })
-      .eq('id', userId)
-      .single();
-
-    if (updateError) {
-      console.error('Error updating user profile:', updateError);
+  // (ISN'T WORKING) update profile picture in Supabase storage
+  if (profilePicture) {
+    const filePath = `profile-pictures/${username}_${Date.now()}.jpg`;
+    const contentType = 'image/jpeg';
+    const base64Image = profilePicture.split(',')[1];
+    const imageBuffer = Buffer.from(base64Image, 'base64');
+  
+    const { data, error: uploadError } = await supabase.storage
+      .from('profile-pictures')
+      .upload(filePath, imageBuffer, {
+        contentType,
+      });
+  
+    if (uploadError) {
+      console.error('Error uploading profile picture:', uploadError.message);
       return res.status(500).json({ error: 'Internal server error' });
     }
-
-    return res.status(200).json({ message: 'User profile updated successfully', user: updatedUser });
-  } catch (error) {
-    console.error('Error in /api/users/:userId/profile:', error);
-    res.status(500).json({ error: 'Internal server error' });
+  
+    const profilePictureUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profile-pictures/${data.path}`;
+  
+    // (ISN'T WORKING) update user profile with new profile picture URL
+    const { data: updatedUserWithPicture, error: updateError } = await supabase
+      .from('users')
+      .update({ username, email, password, hostStatus, profilePictureUrl })
+      .eq('id', userId)
+      .single();
+  
+    if (updateError) {
+      console.error('Error updating user profile with picture:', updateError);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  
+    return res.status(200).json({ message: 'User profile updated successfully', user: updatedUserWithPicture });
   }
+
+  // update user profile in the database
+  const { data: updatedUser, error } = await supabase
+    .from('users')
+    .update({ username, email, password, hostStatus })
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.error('Error updating user profile:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+
+  return res.status(200).json({ message: 'User profile updated successfully', user: updatedUser });
 });
 
 // create event post endpt
@@ -258,10 +313,10 @@ app.post('/api/events', async (req, res) => {
       return res.status(500).json({ error: 'Failed to create event post' });
     }
 
-    res.status(201).json({ message: 'Event post created successfully', event: newEvent });
+    return res.status(201).json({ message: 'Event post created successfully', event: newEvent });
   } catch (error) {
     console.error('Error in /api/events:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -301,7 +356,7 @@ app.post('/api/users/:userId/schedule', async (req, res) => {
     }
 
     if (existingScheduleItem) {
-      // if the event is already in the user's schedule, remove it
+      // if the event is already in the user's schedule, REMOVE it
       const { data: removedScheduleItem, error: deleteError } = await supabase
         .from('user_schedule')
         .delete()
@@ -337,11 +392,11 @@ app.post('/api/users/:userId/schedule', async (req, res) => {
     }
   } catch (error) {
     console.error('Error in /api/users/:userId/schedule:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // server start
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-});
+}); 
