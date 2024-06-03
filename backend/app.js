@@ -1,6 +1,5 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const { decode } = require('base64-arraybuffer');
 const { createClient } = require('@supabase/supabase-js');
 
 dotenv.config();
@@ -17,7 +16,24 @@ app.use(express.json());
 
 // user reg endpt
 app.post('/api/register', async (req, res) => {
-  const { email, username, password, hostStatus, profilePicture } = req.body;
+  const { email, username, password, hostStatus } = req.body;
+  const profilePicture = req.file;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
+  }
+
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+
+  if (!hostStatus) {
+    return res.status(400).json({ error: 'Host status is required' });
+  }
 
   // Stanford email check
   if (!email.endsWith('@stanford.edu')) {
@@ -56,55 +72,40 @@ app.post('/api/register', async (req, res) => {
     return res.status(400).json({ error: 'Username already taken' });
   }
 
+  // (ISN'T WORKING) upload profile picture to Supa storage / keep track of it
+  let profilePictureUrl = null;
+  if (profilePicture) {
+    const filePath = `profile-pictures/${username}_${Date.now()}.jpg`;
+    const contentType = 'image/jpeg';
+    const base64Image = profilePicture.split(',')[1];
+    const imageBuffer = Buffer.from(base64Image, 'base64');
+  
+    const { data, error: uploadError } = await supabase.storage
+      .from('profile-pictures')
+      .upload(filePath, imageBuffer, {
+        contentType,
+      });
+  
+    if (uploadError) {
+      console.error('Error uploading profile picture:', uploadError.message);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  
+    profilePictureUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profile-pictures/${data.path}`;
+  }
+
+  // new user creation
   const { data: newUser, error: insertError } = await supabase
     .from('users')
-    .insert({ email, username, password, hostStatus })
+    .insert({ email, username, password, hostStatus, profilePictureUrl })
     .single();
-  
+
   if (insertError) {
     console.error('Error creating user:', insertError);
     return res.status(500).json({ error: 'Internal server error' });
   }
 
-  const userId = newUser.id;
-
-  // (ISN'T WORKING) upload profile picture to Supa storage / keep track of it
-  let profilePictureUrl = null;
-  if (profilePicture) {
-    const { data, error } = await supabase.storage
-      .from('profile-pictures')
-      .upload(`${userId}.png`, decode(profilePicture), {
-        contentType: 'image/png',
-      });
-
-    if (error) {
-      console.error('Error uploading profile picture:', error);
-    } else {
-      const { publicURL, error: urlError } = await supabase.storage
-        .from('profile-pictures')
-        .getPublicUrl(data.path);
-
-      if (urlError) {
-        console.error('Error retrieving public URL:', urlError);
-      } else {
-        profilePictureUrl = publicURL;
-      }
-    }
-  }
-
-  // Update the user record with the profile picture URL
-  const { data: updatedUser, error: updateError } = await supabase
-    .from('users')
-    .update({ profilePictureUrl })
-    .eq('id', userId)
-    .single();
-
-  if (updateError) {
-    console.error('Error updating user profile:', updateError);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-
-  return res.status(201).json({ message: 'User registered successfully', user: updatedUser });
+  return res.status(201).json({ message: 'User registered successfully', user: newUser });
 });
 
 // user login endpt
@@ -223,48 +224,49 @@ app.put('/api/users/:userId/update', async (req, res) => {
 
   // (ISN'T WORKING) update profile picture in Supabase storage
   if (profilePicture) {
-    const filePath = `${username}_${Date.now()}.png`;
-    const contentType = 'image/png';
-    const base64Image = profilePicture.replace(/^data:image\/\w+;base64,/, '');
+    const filePath = `profile-pictures/${username}_${Date.now()}.jpg`;
+    const contentType = 'image/jpeg';
+    const base64Image = profilePicture.split(',')[1];
     const imageBuffer = Buffer.from(base64Image, 'base64');
-
+  
     const { data, error: uploadError } = await supabase.storage
       .from('profile-pictures')
       .upload(filePath, imageBuffer, {
         contentType,
-        cacheControl: '3600',
-        upsert: true,
       });
-
+  
     if (uploadError) {
       console.error('Error uploading profile picture:', uploadError.message);
       return res.status(500).json({ error: 'Internal server error' });
     }
-
-    const { publicURL, error: publicUrlError } = supabase.storage
-      .from('profile-pictures')
-      .getPublicUrl(filePath);
-
-    if (publicUrlError) {
-      console.error('Error retrieving public URL:', publicUrlError.message);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-
-    const profilePictureUrl = publicURL;
-
-    // update user profile with new profile picture URL
+  
+    const profilePictureUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profile-pictures/${data.path}`;
+  
+    // (ISN'T WORKING) update user profile with new profile picture URL
     const { data: updatedUserWithPicture, error: updateError } = await supabase
       .from('users')
-      .update({ username, email, password, hostStatus, profile_picture_url: profilePictureUrl })
+      .update({ username, email, password, hostStatus, profilePictureUrl })
       .eq('id', userId)
       .single();
-
+  
     if (updateError) {
       console.error('Error updating user profile with picture:', updateError);
       return res.status(500).json({ error: 'Internal server error' });
     }
-
+  
     return res.status(200).json({ message: 'User profile updated successfully', user: updatedUserWithPicture });
+  }
+
+  // update user profile in the database
+  const { data: updatedUser, error } = await supabase
+    .from('users')
+    .update({ username, email, password, hostStatus })
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.error('Error updating user profile:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 
   return res.status(200).json({ message: 'User profile updated successfully', user: updatedUser });
@@ -397,4 +399,4 @@ app.post('/api/users/:userId/schedule', async (req, res) => {
 // server start
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-});
+}); 
