@@ -13,7 +13,7 @@ import React, { useState, useEffect } from "react";
 import { styles } from "../../../assets/Themes/styles";
 import Post from "../../../components/Post";
 import PostButton from "../../../components/PostButton";
-
+import { useUser } from "../../../userContext";
 const data = [
   { id: "1", title: "first" },
   { id: "2", title: "second" },
@@ -21,6 +21,7 @@ const data = [
 ];
 
 export default function Page() {
+  const { loggedInUserId, setLoggedInUserId, hostStatus } = useUser();
   return (
     <ImageBackground
       source={require("../../../assets/background_img.png")}
@@ -28,7 +29,7 @@ export default function Page() {
       style={styles.background}
     >
       <SafeAreaView>
-        <PostButton />
+        {hostStatus == "host" && <PostButton />}
         <FlatList
           data={data}
           renderItem={({ item }) => <Post id={item.id} source="events" />}
