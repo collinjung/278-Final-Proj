@@ -19,8 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useUser } from "../userContext";
 
 export default function Page() {
-  //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
-  const supabaseUrl = "http://localhost:3000";
+  const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { loggedInUserId, setLoggedInUserId, hostStatus, setHostStatus } =
