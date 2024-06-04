@@ -1,2 +1,4 @@
 node_modules
 .expo
+backend/node_modules/.bin/mime
+backend/node_modules/.bin/mkdirp
