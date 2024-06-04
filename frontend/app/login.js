@@ -16,10 +16,16 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { styles } from "../assets/Themes/styles";
 import { LinearGradient } from "expo-linear-gradient";
+import { useUser } from "../userContext";
 
 export default function Page() {
+  //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
+  const supabaseUrl = "http://localhost:3000";
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const { loggedInUserId, setLoggedInUserId, hostStatus, setHostStatus } =
+    useUser();
   return (
     <ImageBackground
       source={require("../assets/background_img.png")}
@@ -63,7 +69,25 @@ export default function Page() {
           </View>
           <TouchableOpacity
             style={styles.initialLoginButton}
-            onPress={() => router.push("/tabs")}
+            onPress={async () => {
+              const params = { username: username, password: password };
+              console.log(params);
+              console.log(`${supabaseUrl}/api/login`);
+              const response = await fetch(`${supabaseUrl}/api/login`, {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(params),
+              });
+              console.log("test");
+              setLoggedInUserId(username);
+              setHostStatus(response.user.hostStatus);
+              console.log(response.status);
+              if (response.status == 201) {
+                router.push("/tabs");
+              }
+            }}
           >
             <LinearGradient
               colors={["#261372", "#7C2FCA"]}

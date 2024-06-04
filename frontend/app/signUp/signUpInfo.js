@@ -2,27 +2,25 @@ import {
   Text,
   View,
   Image,
-  ScrollView,
   TouchableOpacity,
   ImageBackground,
   TextInput,
   KeyboardAvoidingView,
-  Pressable,
-  SafeAreaView,
   Linking,
 } from "react-native";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { styles } from "../../assets/Themes/styles";
-import { Ionicons } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, useSegments } from "expo-router";
+import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Entypo } from "@expo/vector-icons";
 import CommunityGuidelines from "../../components/CommunityGuidelines";
 import RadioGroup from "react-native-radio-buttons-group";
+import { useUser } from "../../userContext";
 
 export default function Page() {
+  const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
+  const { loggedInUserId, setLoggedInUserId } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
   const [image, setImage] = useState(null);
@@ -34,14 +32,14 @@ export default function Page() {
   const radioButtons = useMemo(
     () => [
       {
-        id: "yes",
+        id: "host",
         label: "yes",
         value: "yes",
         color: "white",
         labelStyle: { color: "white", fontFamily: "gill sans", fontSize: 18 },
       },
       {
-        id: "no",
+        id: "attendee",
         label: "no",
         value: "no",
         color: "white",
@@ -195,10 +193,31 @@ export default function Page() {
           <TouchableOpacity
             style={styles.newPostButton}
             onPress={async () => {
-              router.replace("tabs");
-              router.push({
-                pathname: "/tabs",
+              const params = {
+                email: email,
+                username: username,
+                password: password,
+                hostStatus: selectedId,
+                profilePicture: image,
+              };
+
+              const response = await fetch(`${supabaseUrl}/api/register`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(params),
               });
+              setLoggedInUserId(username);
+              console.log(loggedInUserId);
+              if (response.status == 201) {
+                router.replace("tabs");
+                router.push({
+                  pathname: "/tabs",
+                });
+              } else {
+                console.log("no");
+              }
             }}
           >
             <LinearGradient
