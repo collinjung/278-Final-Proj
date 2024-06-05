@@ -7,18 +7,21 @@ dotenv.config();
 const app = express();
 const port = 3000;
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90bXhueG15YnprbHV2a3d1cGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTcxNzgyMjQsImV4cCI6MjAzMjc1NDIyNH0.8qRg8kaknj0QM5srX2sPGRzjD8GIXhWaMx4mNhuX3Yo";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // middleware
 app.use(express.json());
 
+app.get("/", async (req, res) => {
+  return res.status(200).json({ message: "hi" });
+});
+
 // user reg endpt
 app.post("/api/register", async (req, res) => {
   const { email, username, password, hostStatus, image } = req.body;
-  //   const profilePicture = req.file;
-
   if (!email) {
     return res.status(400).json({ error: "Email is required" });
   }
@@ -73,34 +76,19 @@ app.post("/api/register", async (req, res) => {
   if (existingUser) {
     return res.status(400).json({ error: "Username already taken" });
   }
-
-  // (ISN'T WORKING) upload profile picture to Supa storage / keep track of it
-  let profilePictureUrl = null;
-  if (image) {
-    const base64 = await FileSystem.readAsStringAsync(image, {
-      encoding: "base64",
-    });
-    const filePath = `profile-pictures/${username}_${Date.now()}.png`;
-    const contentType = "image/png";
-    console.log(filePath);
-    const { data, error } = await supabase.storage
-      .from("profile-pictures")
-      .upload(filePath, decode(base64), {
-        contentType,
-      });
-
-    if (uploadError) {
-      console.error("Error uploading profile picture:", uploadError.message);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-    profilePictureUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/profile-pictures/${data.path}`;
-    console.log(profilePictureUrl);
-  }
+  const profile_pic = `${process.env.SUPABASE_URL}/storage/v1/object/public/profile-pictures/${image}`;
 
   // new user creation
-  const { data: newUser, error: insertError } = await supabase
+  const { data: user, error: insertError } = await supabase
     .from("users")
-    .insert({ email, username, password, hostStatus, profilePictureUrl })
+    .insert({
+      email: email,
+      username: username,
+      password: password,
+      hostStatus: hostStatus,
+      profile_pic: profile_pic,
+      events: [],
+    })
     .single();
 
   if (insertError) {
@@ -108,9 +96,7 @@ app.post("/api/register", async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 
-  return res
-    .status(201)
-    .json({ message: "User registered successfully", user: newUser });
+  return res.status(201).json({ message: JSON.stringify(user), user: user });
 });
 
 // user login endpt
@@ -138,14 +124,14 @@ app.post("/api/login", async (req, res) => {
 });
 
 // profile retrieval endpt
-app.get("/api/users/:userId", async (req, res) => {
-  const userId = req.params.userId;
+app.get("/api/users/:username", async (req, res) => {
+  const username = req.params.username;
 
   // retrieve user profile from the database
   const { data: user, error } = await supabase
     .from("users")
     .select("*")
-    .eq("id", userId)
+    .eq("username", username)
     .single();
 
   if (error) {
@@ -170,7 +156,7 @@ app.get("/api/users/:userId", async (req, res) => {
 
     if (publicUrlError) {
       console.error("Error retrieving public URL:", publicUrlError.message);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error hahaha" });
     }
 
     user.profilePictureUrl = publicURL;
@@ -182,7 +168,7 @@ app.get("/api/users/:userId", async (req, res) => {
 // profile update endpt
 app.put("/api/users/:userId/update", async (req, res) => {
   const userId = req.params.userId;
-  const { username, email, password, hostStatus, profilePicture } = req.body;
+  const { username, profilePicture } = req.body;
 
   // Stanford email check
   if (email && !email.endsWith("@stanford.edu")) {
