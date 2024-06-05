@@ -18,12 +18,41 @@ import { styles } from "../assets/Themes/styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUser } from "../userContext";
 
+const supabaseUrl = "http://10.35.50.123:3000";
+
+const handleLogin = async (
+  username,
+  password,
+  setHostStatus,
+  setLoggedInUserId
+) => {
+  const params = { username: username, password: password };
+  try {
+    const response = await fetch(supabaseUrl + "/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
+    });
+    const data = await response.json();
+
+    setLoggedInUserId(username);
+    setHostStatus(data.user.hostStatus);
+    if (response.status == 200) {
+      router.push("/tabs");
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 export default function Page() {
-  const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
+  //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { loggedInUserId, setLoggedInUserId, hostStatus, setHostStatus } =
-    useUser();
+  const { setLoggedInUserId, setHostStatus } = useUser();
+
   return (
     <ImageBackground
       source={require("../assets/background_img.png")}
@@ -67,25 +96,9 @@ export default function Page() {
           </View>
           <TouchableOpacity
             style={styles.initialLoginButton}
-            onPress={async () => {
-              const params = { username: username, password: password };
-              console.log(params);
-              console.log(`${supabaseUrl}/api/login`);
-              const response = await fetch(`${supabaseUrl}/api/login`, {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(params),
-              });
-              console.log("test");
-              setLoggedInUserId(username);
-              setHostStatus(response.user.hostStatus);
-              console.log(response.status);
-              if (response.status == 201) {
-                router.push("/tabs");
-              }
-            }}
+            onPress={() =>
+              handleLogin(username, password, setHostStatus, setLoggedInUserId)
+            }
           >
             <LinearGradient
               colors={["#261372", "#7C2FCA"]}

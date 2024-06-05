@@ -19,7 +19,8 @@ import RadioGroup from "react-native-radio-buttons-group";
 import { useUser } from "../../userContext";
 
 export default function Page() {
-  const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
+  //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
+  const supabaseUrl = "http://localhost:3000";
   const { loggedInUserId, setLoggedInUserId } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
