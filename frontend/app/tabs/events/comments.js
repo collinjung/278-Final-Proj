@@ -48,6 +48,7 @@ export default function Page() {
                   onChangeText={(text) => {
                     setCommentText(text);
                   }}
+                  autoCapitalize="none"
                 />
               </View>
               <TouchableOpacity onPress={handleComment}>

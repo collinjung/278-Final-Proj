@@ -79,10 +79,11 @@ export default function Page() {
               onChangeText={(text) => {
                 setUsername(text);
               }}
+              autoCapitalize="none"
             />
           </View>
           <View style={styles.commentInputBar}>
-            <View style={styles.commentInput}>
+            <View style={styles.passwordInputContainer}>
               <TextInput
                 style={styles.textBody}
                 placeholder={"password"}
@@ -92,6 +93,7 @@ export default function Page() {
                 onChangeText={(text) => {
                   setPassword(text);
                 }}
+                autoCapitalize="none"
               />
             </View>
           </View>

@@ -127,6 +127,7 @@ export default function Page() {
                   setName(text);
                 }}
                 color="white"
+                autoCapitalize="none"
               ></TextInput>
             </View>
             <View style={styles.newPostInfoContainer}>
@@ -149,6 +150,7 @@ export default function Page() {
                   setLocation(text);
                 }}
                 color="white"
+                autoCapitalize="none"
               ></TextInput>
             </View>
             <View style={styles.newPostInfoContainer}>
@@ -214,6 +216,7 @@ export default function Page() {
                   setReqs(text);
                 }}
                 color="white"
+                autoCapitalize="none"
               ></TextInput>
             </View>
             <View style={styles.newPostInfoContainer}>
@@ -247,6 +250,7 @@ export default function Page() {
                   setDescription(text);
                 }}
                 color="white"
+                autoCapitalize="none"
               ></TextInput>
             </View>
             <View style={styles.newPostInfoContainer}>
