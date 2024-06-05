@@ -17,10 +17,11 @@ import { Entypo } from "@expo/vector-icons";
 import CommunityGuidelines from "../../components/CommunityGuidelines";
 import RadioGroup from "react-native-radio-buttons-group";
 import { useUser } from "../../userContext";
+import { uploadImage } from "../../util";
 
 export default function Page() {
   //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
-  const supabaseUrl = "http://localhost:3000";
+  const supabaseUrl = "http://10.30.65.121:3000";
   const { loggedInUserId, setLoggedInUserId } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function Page() {
   const radioButtons = useMemo(
     () => [
       {
-        id: "host",
+        id: "pending host",
         label: "yes",
         value: "yes",
         color: "white",
@@ -194,14 +195,15 @@ export default function Page() {
           <TouchableOpacity
             style={styles.newPostButton}
             onPress={async () => {
+              const filepath = await uploadImage(image, username);
               const params = {
                 email: email,
                 username: username,
                 password: password,
                 hostStatus: selectedId,
-                profilePicture: image,
+                image: filepath,
               };
-
+              console.log(params);
               const response = await fetch(`${supabaseUrl}/api/register`, {
                 method: "POST",
                 headers: {
@@ -210,7 +212,6 @@ export default function Page() {
                 body: JSON.stringify(params),
               });
               setLoggedInUserId(username);
-              console.log(loggedInUserId);
               if (response.status == 201) {
                 router.replace("tabs");
                 router.push({

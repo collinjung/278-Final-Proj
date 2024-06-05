@@ -18,7 +18,8 @@ import { styles } from "../assets/Themes/styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUser } from "../userContext";
 
-const supabaseUrl = "http://10.35.50.123:3000";
+const supabaseUrl = "http://10.30.65.121:3000";
+// const supabaseUrl = "http://localhost:3000";
 
 const handleLogin = async (
   username,

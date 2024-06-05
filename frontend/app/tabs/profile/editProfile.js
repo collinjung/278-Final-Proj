@@ -75,7 +75,9 @@ export default function Page() {
           <View style={styles.profileEditButton}>
             <TouchableOpacity
               style={styles.profileEditButton}
-              onPress={() => router.push("tabs/profile")}
+              onPress={() => {
+                router.push("tabs/profile");
+              }}
             >
               <LinearGradient
                 colors={["#261372", "#7C2FCA"]}

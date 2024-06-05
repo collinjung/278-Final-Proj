@@ -15,12 +15,17 @@ import CommunityGuidelines from "./CommunityGuidelines";
 import Post from "./Post";
 import { useUser } from "../userContext";
 
-const supabaseUrl = "http://10.35.50.123:3000";
+const supabaseUrl = "http://10.30.65.121:3000";
 
 const ProfileContent = ({ userID, username, userType, image }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const { loggedInUserId } = useUser();
-  const [userData, setUserData] = useState({ username: "", hostStatus: "" });
+  const [userData, setUserData] = useState({
+    username: "",
+    hostStatus: "",
+    profile_pic: "",
+    hostStatus: "attendee",
+  });
   useEffect(() => {
     async function fetchData() {
       try {
@@ -34,13 +39,17 @@ const ProfileContent = ({ userID, username, userType, image }) => {
           }
         );
         const data = await response.json();
-        console.log(data);
         setUserData(data.user);
       } catch (e) {
-        console.log(e);
-        setUserData({ username: "", hostStatus: "" });
+        setUserData({
+          username: "",
+          hostStatus: "",
+          profile_pic: "",
+          hostStatus: "attendee",
+        });
       }
     }
+
     fetchData();
   }, []);
 
@@ -53,13 +62,21 @@ const ProfileContent = ({ userID, username, userType, image }) => {
     >
       <ScrollView contentContainerStyle={styles.profileScrollView}>
         <View style={styles.profileCard}>
-          <Image
-            style={styles.profilePicture}
-            source={require("../assets/stanford.png")}
-          />
+          {userData.profile_pic != "" ? (
+            <Image
+              style={styles.profilePicture}
+              source={{ uri: userData.profile_pic }}
+            />
+          ) : (
+            <Image
+              style={styles.profilePicture}
+              source={require("../assets/stanford.png")}
+            />
+          )}
+
           <Text style={styles.profileUsername}>@{userData.username}</Text>
           <Text style={styles.textSecondary}>{userData.hostStatus}</Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.profileButton}
             onPress={() => router.push("/tabs/profile/editProfile")}
           >
@@ -69,7 +86,7 @@ const ProfileContent = ({ userID, username, userType, image }) => {
             >
               <Text style={styles.textBody}>edit profile</Text>
             </LinearGradient>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             style={styles.profileButton}
             onPress={() => setModalVisible(true)}
@@ -87,27 +104,29 @@ const ProfileContent = ({ userID, username, userType, image }) => {
           ></CommunityGuidelines>
         </View>
         {/* if host, view posts */}
-        <View style={styles.profilePostsView}>
-          <View style={styles.profilePostsHeader}>
-            <Ionicons
-              name="balloon"
-              size={22}
-              color="white"
-              style={{ marginRight: 5, marginLeft: 10 }}
-            />
-            <Text
-              style={{
-                fontSize: 20,
-                color: "white",
-                fontWeight: "bold",
-                fontFamily: "gill sans",
-              }}
-            >
-              my posts
-            </Text>
+        {userData.hostStatus == "host" && (
+          <View style={styles.profilePostsView}>
+            <View style={styles.profilePostsHeader}>
+              <Ionicons
+                name="balloon"
+                size={22}
+                color="white"
+                style={{ marginRight: 5, marginLeft: 10 }}
+              />
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: "white",
+                  fontWeight: "bold",
+                  fontFamily: "gill sans",
+                }}
+              >
+                my posts
+              </Text>
+            </View>
+            <Post source="profile" />
           </View>
-          <Post source="profile" />
-        </View>
+        )}
       </ScrollView>
     </ImageBackground>
   );
