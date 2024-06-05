@@ -138,7 +138,9 @@ export const styles = StyleSheet.create({
     opacity: 0.7,
     fontFamily: "gill sans",
   },
-
+  passwordInputContainer: {
+    width: windowWidth * 0.85,
+  },
   postAddEvent: {
     backgroundColor: colors.container,
     height: 30,

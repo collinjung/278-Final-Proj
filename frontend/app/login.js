@@ -81,7 +81,7 @@ export default function Page() {
             />
           </View>
           <View style={styles.commentInputBar}>
-            <View style={styles.commentInput}>
+            <View style={styles.passwordInputContainer}>
               <TextInput
                 style={styles.textBody}
                 placeholder={"password"}
