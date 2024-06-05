@@ -3,9 +3,7 @@ import { styles } from "../assets/Themes/styles";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
 
-const windowWidth = Dimensions.get("window").width;
-
-const SchedulePost = ({ postID }) => {
+const SchedulePost = ({ date, event_name, location, time }) => {
   const router = useRouter();
 
   return (
@@ -15,9 +13,11 @@ const SchedulePost = ({ postID }) => {
         source={require("../assets/crochella.png")}
       />
       <View style={styles.schedulePostInfo}>
-        <Text style={styles.textTitle}>Crochella</Text>
-        <Text style={styles.textBody}>Crothers Court</Text>
-        <Text style={styles.textBody}>6:00pm</Text>
+        <Text style={styles.textTitle}>{event_name}</Text>
+        <Text style={styles.textBody}>{location}</Text>
+        <Text style={styles.textBody}>
+          {date} {time}
+        </Text>
       </View>
       <View style={styles.scheduleSeePost}>
         <TouchableOpacity

@@ -6,23 +6,91 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { styles } from "../assets/Themes/styles";
 import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
+import { useUser } from "../userContext";
+const supabaseUrl = "http://10.30.65.121:3000";
 
-const windowWidth = Dimensions.get("window").width;
-
-const Post = ({ postID, source }) => {
+const Post = ({
+  attendee_restrictions,
+  date,
+  description,
+  event_name,
+  postId,
+  poster_username,
+  image_url,
+  location,
+  react_count,
+  time,
+  source,
+  isAttending,
+}) => {
   const router = useRouter();
   const [_, path] = useSegments();
   const [eventAdded, setEventAdded] = useState(false);
+  const [profile_pic, setProfilePic] = useState("");
   const [reacted, setReacted] = useState(false);
   const [reactCount, setReactCount] = useState(0);
+  const { loggedInUserId, setAddPost } = useUser();
+  const username = loggedInUserId;
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(
+          supabaseUrl + "/api/users/" + loggedInUserId,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setProfilePic(data.user.profile_pic);
+      } catch (e) {}
+    }
 
-  const toggleEvent = () => {
+    fetchData();
+    setEventAdded(isAttending);
+  }, [date]);
+
+  const toggleEvent = async () => {
+    if (eventAdded == false) {
+      try {
+        const response = await fetch(
+          supabaseUrl + "/api/events/" + username + "/" + postId,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (e) {
+        console.log(e);
+      }
+      setEventAdded(!eventAdded);
+    } else {
+      try {
+        const response = await fetch(
+          supabaseUrl + "/api/events/" + username + "/" + postId,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (e) {
+        console.log(e);
+      }
+    }
     setEventAdded(!eventAdded);
+    setAddPost((prevA) => prevA + 1);
+    // }
   };
 
   const handleReact = () => {
@@ -51,18 +119,32 @@ const Post = ({ postID, source }) => {
   return (
     <View style={styles.postContainer}>
       <View style={styles.postUserContainer}>
-        <Image
-          style={styles.postProfilePic}
-          source={{
-            uri: "https://firebasestorage.googleapis.com/v0/b/unify-v3-copy.appspot.com/o/3ldryji87dr-5%3A26?alt=media&token=6d6684b0-927a-4ca3-81f2-0b6af133defe",
-          }}
-        />
-        <Text style={styles.postUsername}>@crotherscourt</Text>
+        {profile_pic == "" ? (
+          <Image
+            style={styles.postProfilePic}
+            source={{
+              uri: "https://firebasestorage.googleapis.com/v0/b/unify-v3-copy.appspot.com/o/3ldryji87dr-5%3A26?alt=media&token=6d6684b0-927a-4ca3-81f2-0b6af133defe",
+            }}
+          />
+        ) : (
+          <Image
+            style={styles.postProfilePic}
+            source={{
+              uri: profile_pic,
+            }}
+          />
+        )}
+        <Text style={styles.postUsername}>@{poster_username}</Text>
       </View>
-      <Image
-        source={require("../assets/crochella.png")}
-        style={styles.postImage}
-      />
+      {image_url == "" ? (
+        <Image
+          source={require("../assets/crochella.png")}
+          style={styles.postImage}
+        />
+      ) : (
+        <Image source={{ uri: image_url }} style={styles.postImage} />
+      )}
+
       <View style={styles.postReactBar}>
         <TouchableOpacity
           style={styles.postReactContainer}
@@ -73,14 +155,14 @@ const Post = ({ postID, source }) => {
             size={18}
             color={reacted ? "red" : "white"}
           />
-          <Text style={styles.textBody}>{reactCount}</Text>
+          <Text style={styles.textBody}>{react_count}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.postReactContainer}
+          style={styles.seeComments}
           onPress={navigateToComments}
         >
           <FontAwesome name="comment" size={18} color="white" />
-          <Text style={styles.textBody}>1</Text>
+          <Text style={styles.textBody}> Comments</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={eventAdded ? styles.postAddedEvent : styles.postAddEvent}
@@ -107,7 +189,7 @@ const Post = ({ postID, source }) => {
             color="white"
             style={{ marginRight: 5 }}
           />
-          <Text style={styles.textTitle}>Crochella</Text>
+          <Text style={styles.textTitle}>{event_name}</Text>
         </View>
         <View style={styles.postContentComponents}>
           <Ionicons
@@ -116,7 +198,7 @@ const Post = ({ postID, source }) => {
             color="white"
             style={{ marginRight: 5 }}
           />
-          <Text style={styles.textBody}>Crothers Courtyard</Text>
+          <Text style={styles.textBody}>{location}</Text>
         </View>
         <View style={styles.postContentComponents}>
           <Ionicons
@@ -125,7 +207,7 @@ const Post = ({ postID, source }) => {
             color="white"
             style={{ marginRight: 5 }}
           />
-          <Text style={styles.textBody}>April 25th</Text>
+          <Text style={styles.textBody}>{date}</Text>
         </View>
         <View style={styles.postContentComponents}>
           <FontAwesome
@@ -134,7 +216,7 @@ const Post = ({ postID, source }) => {
             color="white"
             style={{ marginRight: 5 }}
           />
-          <Text style={styles.textBody}>6:00pm</Text>
+          <Text style={styles.textBody}>{time}</Text>
         </View>
         <View style={styles.postContentComponents}>
           <Ionicons
@@ -143,9 +225,7 @@ const Post = ({ postID, source }) => {
             color="white"
             style={{ marginRight: 5 }}
           />
-          <Text style={styles.textBody}>
-            18+, valid Stanford student ID required
-          </Text>
+          <Text style={styles.textBody}>{attendee_restrictions}</Text>
         </View>
         <View
           style={[styles.postContentComponents, { alignItems: "flex-start" }]}
@@ -157,7 +237,7 @@ const Post = ({ postID, source }) => {
             style={{ marginRight: 5 }}
           />
           <Text style={[styles.textBody, { marginRight: 15 }]}>
-            Share your favorite student band in the comments!
+            {description}
           </Text>
         </View>
       </View>

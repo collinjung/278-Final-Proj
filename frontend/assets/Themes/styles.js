@@ -138,7 +138,18 @@ export const styles = StyleSheet.create({
     opacity: 0.7,
     fontFamily: "gill sans",
   },
-
+  seeComments: {
+    backgroundColor: colors.container,
+    height: 30,
+    width: windowWidth * 0.26,
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    padding: 6,
+    borderRadius: 15,
+    opacity: 0.7,
+    marginRight: 5,
+    alignContent: "center",
+  },
   postAddEvent: {
     backgroundColor: colors.container,
     height: 30,
@@ -344,11 +355,14 @@ export const styles = StyleSheet.create({
   schedulePostInfo: {
     flexDirection: "column",
     justifyContent: "flex-start",
+    width: 160,
   },
   scheduleSeePost: {
     flexDirection: "row",
-    width: windowWidth * 0.4,
+    // width: windowWidth * 0.1,
+    width: 100,
     justifyContent: "flex-end",
+    // backgroundColor: "red",
   },
   signUpPitchContainer: {
     flexDirection: "row",

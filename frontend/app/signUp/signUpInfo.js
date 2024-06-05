@@ -203,7 +203,6 @@ export default function Page() {
                 hostStatus: selectedId,
                 image: filepath,
               };
-              console.log(params);
               const response = await fetch(`${supabaseUrl}/api/register`, {
                 method: "POST",
                 headers: {

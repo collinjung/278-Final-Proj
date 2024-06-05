@@ -19,6 +19,137 @@ app.get("/", async (req, res) => {
   return res.status(200).json({ message: "hi" });
 });
 
+app.delete("/api/events/:username/:postId", async (req, res) => {
+  const { username, postId } = req.params;
+
+  try {
+    // Retrieve the user record based on the username
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("events")
+      .eq("username", username)
+      .single();
+
+    if (userError) {
+      console.error("Error retrieving user data:", userError);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if the postId exists in the events list
+    if (!user.events.includes(postId)) {
+      return res
+        .status(404)
+        .json({ error: "Event ID not found in user's list" });
+    }
+
+    // Remove the postId from the events list
+    const updatedEvents = user.events.filter((event) => event !== postId);
+
+    // Save the updated user record back to the database
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ events: updatedEvents })
+      .eq("username", username);
+
+    if (updateError) {
+      console.error("Error updating user data:", updateError);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Event ID removed from events list successfully" });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.put("/api/events/:username/:postId", async (req, res) => {
+  const { postId, username } = req.params;
+
+  try {
+    // Retrieve the user record based on the username
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username)
+      .single();
+
+    if (userError) {
+      console.error("Error retrieving user data:", userError);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update the events list with the new postId
+    const updatedEvents = user.events ? [...user.events, postId] : [postId];
+
+    // Save the updated user record back to the database
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ events: updatedEvents })
+      .eq("username", username);
+
+    if (updateError) {
+      console.error("Error updating user data:", updateError);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Post ID added to events list successfully" });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/events/:username", async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    // Retrieve user data to get the list of event UUIDs
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("events")
+      .eq("username", username)
+      .single();
+
+    if (userError) {
+      console.error("Error retrieving user data:", userError);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Retrieve events based on the list of UUIDs
+    const { data: events, error: eventsError } = await supabase
+      .from("events")
+      .select("*")
+      .in("n_id", user.events);
+
+    if (eventsError) {
+      console.error("Error retrieving events:", eventsError);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res.status(200).json(events);
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // user reg endpt
 app.post("/api/register", async (req, res) => {
   const { email, username, password, hostStatus, image } = req.body;
@@ -276,6 +407,22 @@ app.put("/api/users/:userId/update", async (req, res) => {
   return res
     .status(200)
     .json({ message: "User profile updated successfully", user: updatedUser });
+});
+
+app.get("/api/events", async (req, res) => {
+  try {
+    const { data: events, error } = await supabase.from("events").select("*");
+
+    if (error) {
+      console.error("Error retrieving events:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res.status(200).json({ events });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // create event post endpt
