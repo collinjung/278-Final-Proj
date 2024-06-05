@@ -70,6 +70,7 @@ export default function Page() {
                 setUsername(text);
               }}
               color="white"
+              autoCapitalize="none"
             />
           </View>
           <View style={styles.profileEditButton}>

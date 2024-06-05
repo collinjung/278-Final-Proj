@@ -78,6 +78,7 @@ export default function Page() {
               onChangeText={(text) => {
                 setUsername(text);
               }}
+              autoCapitalize="none"
             />
           </View>
           <View style={styles.commentInputBar}>
@@ -91,6 +92,7 @@ export default function Page() {
                 onChangeText={(text) => {
                   setPassword(text);
                 }}
+                autoCapitalize="none"
               />
             </View>
           </View>

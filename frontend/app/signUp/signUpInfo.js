@@ -105,6 +105,7 @@ export default function Page() {
                 setEmail(text);
               }}
               color="white"
+              autoCapitalize="none"
             ></TextInput>
           </View>
           <View style={styles.newPostInfoContainer}>
@@ -120,6 +121,7 @@ export default function Page() {
                 setUsername(text);
               }}
               color="white"
+              autoCapitalize="none"
             ></TextInput>
           </View>
           <View style={styles.newPostInfoContainer}>
@@ -136,6 +138,7 @@ export default function Page() {
               }}
               secureTextEntry={true}
               color="white"
+              autoCapitalize="none"
             ></TextInput>
           </View>
           <View style={styles.newPostInfoContainer}>
