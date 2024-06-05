@@ -114,7 +114,7 @@ app.post("/api/register", async (req, res) => {
 });
 
 // user login endpt
-app.get("/api/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
   // find user by username
@@ -431,17 +431,6 @@ app.post("/api/users/:userId/schedule", async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 });
-
-app.get("api/events/:userId", async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("user_id", userId);
-
-    }
-})
 
 // server start
 app.listen(port, () => {

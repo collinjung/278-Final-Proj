@@ -13,9 +13,37 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import CommunityGuidelines from "./CommunityGuidelines";
 import Post from "./Post";
+import { useUser } from "../userContext";
+
+const supabaseUrl = "http://10.35.50.123:3000";
 
 const ProfileContent = ({ userID, username, userType, image }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const { loggedInUserId } = useUser();
+  const [userData, setUserData] = useState({ username: "", hostStatus: "" });
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(
+          supabaseUrl + "/api/users/" + loggedInUserId,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        setUserData(data.user);
+      } catch (e) {
+        console.log(e);
+        setUserData({ username: "", hostStatus: "" });
+      }
+    }
+    fetchData();
+  }, []);
+
   const router = useRouter();
   return (
     <ImageBackground
@@ -29,8 +57,8 @@ const ProfileContent = ({ userID, username, userType, image }) => {
             style={styles.profilePicture}
             source={require("../assets/stanford.png")}
           />
-          <Text style={styles.profileUsername}>@sophiejin</Text>
-          <Text style={styles.textSecondary}>host</Text>
+          <Text style={styles.profileUsername}>@{userData.username}</Text>
+          <Text style={styles.textSecondary}>{userData.hostStatus}</Text>
           <TouchableOpacity
             style={styles.profileButton}
             onPress={() => router.push("/tabs/profile/editProfile")}
