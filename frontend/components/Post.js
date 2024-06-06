@@ -21,7 +21,7 @@ const Post = ({
   event_name,
   postId,
   poster_username,
-  image_url, 
+  image_url,
   location,
   react_count,
   time,
@@ -40,7 +40,7 @@ const Post = ({
     async function fetchData() {
       try {
         const response = await fetch(
-          supabaseUrl + "/api/users/" + loggedInUserId,
+          supabaseUrl + "/api/users/" + poster_username,
           {
             method: "GET",
             headers: {
@@ -50,6 +50,7 @@ const Post = ({
         );
         const data = await response.json();
         setProfilePic(data.user.profile_pic);
+        setReactCount(react_count);
       } catch (e) {}
     }
 
@@ -93,14 +94,37 @@ const Post = ({
     // }
   };
 
-  const handleReact = () => {
+  const handleReact = async () => {
     if (reacted) {
+      try {
+        const response = await fetch(supabaseUrl + "/api/events/" + postId, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ react_count: reactCount - 1 }),
+        });
+      } catch (e) {
+        console.log(e);
+      }
       setReactCount(reactCount - 1);
     } else {
+      try {
+        const response = await fetch(supabaseUrl + "/api/events/" + postId, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ react_count: reactCount + 1 }),
+        });
+      } catch (e) {
+        console.log(e);
+      }
       setReactCount(reactCount + 1);
     }
     setReacted(!reacted);
   };
+
   const navigateToComments = () => {
     let path;
     if (source === "events") {
@@ -110,9 +134,9 @@ const Post = ({
     } else if (source === "profile") {
       path = "/tabs/profile/comments";
     }
-
     router.push({
       pathname: path,
+      params: { postId: postId },
     });
   };
 
@@ -155,7 +179,7 @@ const Post = ({
             size={18}
             color={reacted ? "red" : "white"}
           />
-          <Text style={styles.textBody}>{react_count}</Text>
+          <Text style={styles.textBody}>{reactCount}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.seeComments}

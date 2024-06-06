@@ -21,7 +21,7 @@ import { uploadImage } from "../../util";
 
 export default function Page() {
   //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
-  const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com"; 
+  const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
   const { loggedInUserId, setLoggedInUserId } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
@@ -154,7 +154,7 @@ export default function Page() {
                 alignItems: "flex-start",
               }}
             />
-            {selectedId == "yes" && (
+            {selectedId == "pending host" && (
               <Text style={[styles.textBody, { marginLeft: 5 }]}>
                 please fill out our host application form{" "}
                 <Text

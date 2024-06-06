@@ -42,7 +42,7 @@ export default function Page() {
         const res = await response.json();
         const res2 = await response2.json();
 
-        console.log("Fetched event data:", res.events);
+        // console.log("Fetched event data:", res.events);
 
         setData(res.events);
         setUserPosts(res2);
@@ -99,7 +99,6 @@ export default function Page() {
         <FlatList
           data={[...data].reverse()}
           renderItem={({ item }) => {
-            console.log("Rendering event item:", item);
             const isAttending = isItemInOverlappingElements(item);
             return (
               <Post
