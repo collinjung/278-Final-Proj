@@ -21,7 +21,7 @@ import { uploadImage } from "../../util";
 
 export default function Page() {
   //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
-  const supabaseUrl = "http://10.30.65.121:3000";
+  const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com"; 
   const { loggedInUserId, setLoggedInUserId } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();

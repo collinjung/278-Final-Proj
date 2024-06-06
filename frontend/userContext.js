@@ -4,6 +4,7 @@ const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
   const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const [loggedInUserUUID, setLoggedInUserUUID] = useState(null);
   const [hostStatus, setHostStatus] = useState(null);
   const [addPost, setAddPost] = useState(0);
   //   const [loggedInFollowingProfiles, setLoggedInFollowingProfiles] =
@@ -17,6 +18,8 @@ export const UserProvider = ({ children }) => {
       value={{
         loggedInUserId,
         setLoggedInUserId,
+        loggedInUserUUID,
+        setLoggedInUserUUID,
         hostStatus,
         setHostStatus,
         addPost,

@@ -15,7 +15,7 @@ import Post from "../../../components/Post";
 import PostButton from "../../../components/PostButton";
 import { useUser } from "../../../userContext";
 
-const supabaseUrl = "http://10.30.65.121:3000";
+const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
 export default function Page() {
   const { loggedInUserId, setLoggedInUserId, hostStatus, addPost } = useUser();
   const [data, setData] = useState([]);
@@ -42,6 +42,8 @@ export default function Page() {
         const res = await response.json();
         const res2 = await response2.json();
 
+        console.log("Fetched event data:", res.events);
+
         setData(res.events);
         setUserPosts(res2);
         // console.log(res.events);
@@ -56,7 +58,7 @@ export default function Page() {
     }
 
     fetchData();
-  }, []);
+  }, [addPost]);
 
   function areDictionariesEqual(dict1, dict2) {
     const keys1 = Object.keys(dict1);
@@ -95,8 +97,9 @@ export default function Page() {
       <SafeAreaView>
         {hostStatus == "host" && <PostButton />}
         <FlatList
-          data={data}
+          data={[...data].reverse()}
           renderItem={({ item }) => {
+            console.log("Rendering event item:", item);
             const isAttending = isItemInOverlappingElements(item);
             return (
               <Post
@@ -117,6 +120,7 @@ export default function Page() {
           }}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 60 }}
+          extraData={addPost}
         />
       </SafeAreaView>
     </ImageBackground>

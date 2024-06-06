@@ -5,7 +5,7 @@ const { createClient } = require("@supabase/supabase-js");
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
 const supabaseKey =
@@ -439,10 +439,21 @@ app.post("/api/events", async (req, res) => {
       userId,
     } = req.body;
 
+    console.log("Received event data:", {
+      eventName,
+      location,
+      date,
+      time,
+      attendeeRestrictions,
+      description,
+      imageUrl,
+      userId,
+    });
+
     // check if user is a host
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("hostStatus")
+      .select("hostStatus, username")
       .eq("id", userId)
       .single();
 
@@ -457,6 +468,9 @@ app.post("/api/events", async (req, res) => {
         .json({ error: "Only hosts can create event posts" });
     }
 
+    const imageFilename = imageUrl; 
+    const imageFullUrl = `https://otmxnxmybzkluvkwuphs.supabase.co/storage/v1/object/public/profile-pictures/${imageFilename}`;
+
     // insert new event post into the events table
     const { data: newEvent, error: insertError } = await supabase
       .from("events")
@@ -468,7 +482,8 @@ app.post("/api/events", async (req, res) => {
         time,
         attendee_restrictions: attendeeRestrictions,
         description,
-        image_url: imageUrl,
+        image_url: imageFullUrl,
+        poster_username: user.username, 
       })
       .single();
 
