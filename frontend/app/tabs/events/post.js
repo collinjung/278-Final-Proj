@@ -21,6 +21,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useSegments } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import CommunityGuidelines from "../../../components/CommunityGuidelines";
+import { uploadImage } from "../../../util";
+import { useUser } from "../../../userContext";
 
 export default function Page() {
   const [image, setImage] = useState(null);
@@ -33,15 +35,21 @@ export default function Page() {
   const [description, setDescription] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
+  const { loggedInUserId, setAddPost, loggedInUserUUID } = useUser();
 
   const formatDate = (dateString) => {
-    const options = { month: "short", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const formatTime = (dateString) => {
-    const options = { hour: "2-digit", minute: "2-digit", hour12: true };
-    return new Date(dateString).toLocaleTimeString(undefined, options);
+    const date = new Date(dateString);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   const pickImage = async () => {
@@ -72,6 +80,47 @@ export default function Page() {
   const handleTimeChange = (event, selectedTime) => {
     const currentTime = selectedTime || time;
     setTime(currentTime);
+  };
+
+  const handlePost = async () => {
+    try {
+      if (image) {
+        const imageUrl = await uploadImage(image, loggedInUserId);
+        const eventData = {
+          eventName: name,
+          location,
+          date: formatDate(date),
+          time: formatTime(time),
+          attendeeRestrictions: reqs,
+          description,
+          imageUrl,
+          userId: loggedInUserUUID,
+          username: loggedInUserId,
+        };
+
+        const response = await fetch("https://cs278project-a77e4f6a4dc9.herokuapp.com/api/events", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        if (response.ok) {
+          setAddPost((prevAddPost) => prevAddPost + 1);
+          router.replace("tabs/events/post");
+          router.push({
+            pathname: "/tabs/events",
+          });
+        } else {
+          console.error("Failed to create event post");
+        }
+      } else {
+        console.error("No image selected");
+      }
+    } catch (error) {
+      console.error("Error creating event post:", error);
+    }
   };
 
   return (
@@ -277,12 +326,7 @@ export default function Page() {
             </View>
             <TouchableOpacity
               style={styles.newPostButton}
-              onPress={async () => {
-                router.replace("tabs/events/post");
-                router.push({
-                  pathname: "/tabs/events",
-                });
-              }}
+              onPress={handlePost}
             >
               <LinearGradient
                 colors={["#261372", "#7C2FCA"]}

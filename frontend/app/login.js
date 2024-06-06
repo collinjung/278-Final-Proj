@@ -18,14 +18,15 @@ import { styles } from "../assets/Themes/styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUser } from "../userContext";
 
-const supabaseUrl = "http://10.30.65.121:3000";
+const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
 // const supabaseUrl = "http://localhost:3000";
 
 const handleLogin = async (
   username,
   password,
   setHostStatus,
-  setLoggedInUserId
+  setLoggedInUserId,
+  setLoggedInUserUUID
 ) => {
   const params = { username: username, password: password };
   try {
@@ -39,6 +40,7 @@ const handleLogin = async (
     const data = await response.json();
 
     setLoggedInUserId(username);
+    setLoggedInUserUUID(data.user.id);
     setHostStatus(data.user.hostStatus);
     if (response.status == 200) {
       router.push("/tabs");
@@ -52,7 +54,7 @@ export default function Page() {
   //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { setLoggedInUserId, setHostStatus } = useUser();
+  const { setLoggedInUserId, setHostStatus, setLoggedInUserUUID } = useUser();
 
   return (
     <ImageBackground
@@ -100,7 +102,7 @@ export default function Page() {
           <TouchableOpacity
             style={styles.initialLoginButton}
             onPress={() =>
-              handleLogin(username, password, setHostStatus, setLoggedInUserId)
+              handleLogin(username, password, setHostStatus, setLoggedInUserId, setLoggedInUserUUID)
             }
           >
             <LinearGradient

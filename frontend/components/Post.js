@@ -12,7 +12,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
 import { useUser } from "../userContext";
-const supabaseUrl = "http://10.30.65.121:3000";
+const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
 
 const Post = ({
   attendee_restrictions,
@@ -21,7 +21,7 @@ const Post = ({
   event_name,
   postId,
   poster_username,
-  image_url,
+  image_url, 
   location,
   react_count,
   time,
