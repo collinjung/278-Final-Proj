@@ -112,6 +112,114 @@ app.put("/api/events/:username/:postId", async (req, res) => {
   }
 });
 
+app.get("/api/events/user/:username", async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    // Fetch events from the database where poster_username matches
+    const { data: events, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("poster_username", username);
+
+    if (error) {
+      console.error("Error fetching events:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res.status(200).json({ events });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/comments/:postId", async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    // Fetch comments from the database where postId matches
+    const { data: comments, error } = await supabase
+      .from("comments")
+      .select("*")
+      .eq("postId", postId);
+
+    if (error) {
+      console.error("Error fetching comments:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res.status(200).json({ comments });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/comments/:postId", async (req, res) => {
+  const { postId } = req.params;
+  const { username, comment_text } = req.body;
+
+  // Validate input
+  if (typeof username !== "string" || typeof comment_text !== "string") {
+    return res.status(400).json({
+      error: "Invalid input. username and comment_text must be strings.",
+    });
+  }
+
+  try {
+    // Insert the new comment into the database
+    const { data, error } = await supabase
+      .from("comments")
+      .insert([{ postId, username, comment_text }]);
+
+    if (error) {
+      console.error("Error inserting comment:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res
+      .status(201)
+      .json({ message: "Comment added successfully", data });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.put("/api/events/:postId", async (req, res) => {
+  const { postId } = req.params;
+  const { react_count } = req.body;
+
+  // Validate react_count
+  if (typeof react_count !== "number") {
+    return res
+      .status(400)
+      .json({ error: "Invalid react_count value. It must be a number." });
+  }
+
+  try {
+    // Update react_count in the database
+    const { data, error } = await supabase
+      .from("events")
+      .update({ react_count })
+      .eq("id", postId)
+      .single();
+
+    if (error) {
+      console.error("Error updating react_count:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "React count updated successfully", data });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 app.get("/api/events/:username", async (req, res) => {
   const { username } = req.params;
 
@@ -468,7 +576,7 @@ app.post("/api/events", async (req, res) => {
         .json({ error: "Only hosts can create event posts" });
     }
 
-    const imageFilename = imageUrl; 
+    const imageFilename = imageUrl;
     const imageFullUrl = `https://otmxnxmybzkluvkwuphs.supabase.co/storage/v1/object/public/profile-pictures/${imageFilename}`;
 
     // insert new event post into the events table
@@ -483,7 +591,7 @@ app.post("/api/events", async (req, res) => {
         attendee_restrictions: attendeeRestrictions,
         description,
         image_url: imageFullUrl,
-        poster_username: user.username, 
+        poster_username: user.username,
       })
       .single();
 

@@ -15,7 +15,8 @@ import CommunityGuidelines from "./CommunityGuidelines";
 import Post from "./Post";
 import { useUser } from "../userContext";
 
-const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
+// const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
+const supabaseUrl = "http://10.30.86.201:3000";
 
 const ProfileContent = ({ userID, username, userType, image }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -26,6 +27,8 @@ const ProfileContent = ({ userID, username, userType, image }) => {
     profile_pic: "",
     hostStatus: "attendee",
   });
+  const [posts, setPosts] = useState(null);
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -39,6 +42,18 @@ const ProfileContent = ({ userID, username, userType, image }) => {
           }
         );
         const data = await response.json();
+        const response2 = await fetch(
+          supabaseUrl + "/api/events/user/" + loggedInUserId,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const postData = await response2.json();
+        setPosts(postData.events);
         setUserData(data.user);
       } catch (e) {
         setUserData({
@@ -124,7 +139,23 @@ const ProfileContent = ({ userID, username, userType, image }) => {
                 my posts
               </Text>
             </View>
-            <Post source="profile" />
+            {posts &&
+              posts.map((item) => (
+                <Post
+                  key={item.id}
+                  attendee_restrictions={item.attendee_restrictions}
+                  date={item.date}
+                  description={item.description}
+                  event_name={item.event_name}
+                  postId={item.n_id}
+                  image_url={item.image_url}
+                  location={item.location}
+                  react_count={item.react_count}
+                  time={item.time}
+                  poster_username={item.poster_username}
+                  source="profile"
+                />
+              ))}
           </View>
         )}
       </ScrollView>

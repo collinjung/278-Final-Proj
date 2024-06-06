@@ -37,8 +37,6 @@ export default function Page() {
     fetchData();
   }, [addPost]);
 
-  console.log(data);
-
   return (
     <ImageBackground
       source={require("../../../assets/background_img.png")}
