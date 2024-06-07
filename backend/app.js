@@ -517,9 +517,28 @@ app.put("/api/users/:userId/update", async (req, res) => {
     .json({ message: "User profile updated successfully", user: updatedUser });
 });
 
+// app.get("/api/events", async (req, res) => {
+//   try {
+//     const { data: events, error } = await supabase.from("events").select("*");
+
+//     if (error) {
+//       console.error("Error retrieving events:", error);
+//       return res.status(500).json({ error: "Internal server error" });
+//     }
+
+//     return res.status(200).json({ events });
+//   } catch (err) {
+//     console.error("Unexpected error:", err);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
 app.get("/api/events", async (req, res) => {
   try {
-    const { data: events, error } = await supabase.from("events").select("*");
+    const { data: events, error } = await supabase
+      .from("events")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error retrieving events:", error);

@@ -49,7 +49,6 @@ const Comment = ({ username, date, text }) => {
       <View style={{ flexDirection: "column" }}>
         <View style={styles.commentHeader}>
           <Text style={styles.usernameComments}>@{username}</Text>
-          <Text style={styles.usernameComments}>{formatted_date}</Text>
         </View>
         <Text style={styles.textBody}>{text}</Text>
       </View>
