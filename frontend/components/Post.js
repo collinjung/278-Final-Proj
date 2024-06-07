@@ -188,22 +188,24 @@ const Post = ({
           <FontAwesome name="comment" size={18} color="white" />
           <Text style={styles.textBody}> Comments</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={eventAdded ? styles.postAddedEvent : styles.postAddEvent}
-          onPress={toggleEvent}
-        >
-          <Ionicons
-            name={
-              eventAdded ? "checkmark-circle-outline" : "add-circle-outline"
-            }
-            size={18}
-            color="white"
-            style={{ marginRight: 5 }}
-          />
-          <Text style={styles.textBody}>
-            {eventAdded ? "added!" : "add to schedule"}
-          </Text>
-        </TouchableOpacity>
+        {source == "events" && (
+          <TouchableOpacity
+            style={eventAdded ? styles.postAddedEvent : styles.postAddEvent}
+            onPress={toggleEvent}
+          >
+            <Ionicons
+              name={
+                eventAdded ? "checkmark-circle-outline" : "add-circle-outline"
+              }
+              size={18}
+              color="white"
+              style={{ marginRight: 5 }}
+            />
+            <Text style={styles.textBody}>
+              {eventAdded ? "added!" : "add to schedule"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
       <View style={styles.postContentContainer}>
         <View style={styles.postContentComponents}>

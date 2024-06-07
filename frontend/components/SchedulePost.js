@@ -3,15 +3,22 @@ import { styles } from "../assets/Themes/styles";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
 
-const SchedulePost = ({ date, event_name, location, time }) => {
+const SchedulePost = ({
+  date,
+  event_name,
+  location,
+  time,
+  image_url,
+  attendee_restrictions,
+  description,
+  postId,
+  react_count,
+  poster_username,
+}) => {
   const router = useRouter();
-
   return (
     <View style={styles.schedulePostContainer}>
-      <Image
-        style={styles.schedulePostImage}
-        source={require("../assets/crochella.png")}
-      />
+      <Image style={styles.schedulePostImage} source={{ uri: image_url }} />
       <View style={styles.schedulePostInfo}>
         <Text style={styles.textTitle}>{event_name}</Text>
         <Text style={styles.textBody}>{location}</Text>
@@ -24,6 +31,18 @@ const SchedulePost = ({ date, event_name, location, time }) => {
           onPress={() =>
             router.push({
               pathname: "/tabs/schedule/seePost",
+              params: {
+                date,
+                event_name,
+                location,
+                time,
+                image_url,
+                attendee_restrictions,
+                description,
+                postId,
+                react_count,
+                poster_username,
+              },
             })
           }
         >

@@ -52,6 +52,12 @@ export default function Page() {
               event_name={item.event_name}
               location={item.location}
               time={item.time}
+              image_url={item.image_url}
+              attendee_restrictions={item.attendee_restrictions}
+              description={item.description}
+              postId={item.n_id}
+              react_count={item.react_count}
+              poster_username={item.poster_username}
             />
           ))}
         </ScrollView>
