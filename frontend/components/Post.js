@@ -12,7 +12,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
 import { useUser } from "../userContext";
-const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
+const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
 
 const Post = ({
   attendee_restrictions,
@@ -188,22 +188,24 @@ const Post = ({
           <FontAwesome name="comment" size={18} color="white" />
           <Text style={styles.textBody}> Comments</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={eventAdded ? styles.postAddedEvent : styles.postAddEvent}
-          onPress={toggleEvent}
-        >
-          <Ionicons
-            name={
-              eventAdded ? "checkmark-circle-outline" : "add-circle-outline"
-            }
-            size={18}
-            color="white"
-            style={{ marginRight: 5 }}
-          />
-          <Text style={styles.textBody}>
-            {eventAdded ? "added!" : "add to schedule"}
-          </Text>
-        </TouchableOpacity>
+        {source == "events" && (
+          <TouchableOpacity
+            style={eventAdded ? styles.postAddedEvent : styles.postAddEvent}
+            onPress={toggleEvent}
+          >
+            <Ionicons
+              name={
+                eventAdded ? "checkmark-circle-outline" : "add-circle-outline"
+              }
+              size={18}
+              color="white"
+              style={{ marginRight: 5 }}
+            />
+            <Text style={styles.textBody}>
+              {eventAdded ? "added!" : "add to schedule"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
       <View style={styles.postContentContainer}>
         <View style={styles.postContentComponents}>

@@ -18,8 +18,7 @@ import { styles } from "../assets/Themes/styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUser } from "../userContext";
 
-const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
-// const supabaseUrl = "http://localhost:3000";
+const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
 
 const handleLogin = async (
   username,
@@ -38,7 +37,6 @@ const handleLogin = async (
       body: JSON.stringify(params),
     });
     const data = await response.json();
-
     setLoggedInUserId(username);
     setLoggedInUserUUID(data.user.id);
     setHostStatus(data.user.hostStatus);
@@ -102,7 +100,13 @@ export default function Page() {
           <TouchableOpacity
             style={styles.initialLoginButton}
             onPress={() =>
-              handleLogin(username, password, setHostStatus, setLoggedInUserId, setLoggedInUserUUID)
+              handleLogin(
+                username,
+                password,
+                setHostStatus,
+                setLoggedInUserId,
+                setLoggedInUserUUID
+              )
             }
           >
             <LinearGradient
