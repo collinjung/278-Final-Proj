@@ -98,7 +98,7 @@ export default function Page() {
           username: loggedInUserId,
         };
 
-        const response = await fetch("https://cs278project-a77e4f6a4dc9.herokuapp.com/api/events", {
+        const response = await fetch("https://cs278finalproject-64458b0d2a75.herokuapp.com/api/events", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

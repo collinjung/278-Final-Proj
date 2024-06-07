@@ -15,7 +15,7 @@ import CommunityGuidelines from "./CommunityGuidelines";
 import Post from "./Post";
 import { useUser } from "../userContext";
 
-const supabaseUrl = "https://cs278project-a77e4f6a4dc9.herokuapp.com";
+const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
 
 const ProfileContent = ({ userID, username, userType, image }) => {
   const [modalVisible, setModalVisible] = useState(false);
