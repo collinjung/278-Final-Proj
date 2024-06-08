@@ -85,7 +85,7 @@ export default function Page() {
           <View style={styles.commentInputBar}>
             <View style={styles.passwordInputContainer}>
               <TextInput
-                style={styles.textBody}
+                style={styles.passwordTextInput}
                 placeholder={"password"}
                 placeholderTextColor={"gray"}
                 value={password}

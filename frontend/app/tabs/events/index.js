@@ -41,10 +41,13 @@ export default function Page() {
         );
         const res = await response.json();
         const res2 = await response2.json();
+        const sortedEvents = res.events.sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
 
         // console.log("Fetched event data:", res.events);
 
-        setData(res.events);
+        setData(sortedEvents);
         setUserPosts(res2);
         // console.log(res.events);
         // console.log(res2);
