@@ -150,6 +150,11 @@ export const styles = StyleSheet.create({
     marginRight: 5,
     alignContent: "center",
   },
+  passwordTextInput: {
+    width: windowWidth * 0.85,
+    fontFamily: "gill sans",
+    color: "white",
+  },
   postAddEvent: {
     backgroundColor: colors.container,
     height: 30,
