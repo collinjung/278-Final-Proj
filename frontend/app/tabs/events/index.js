@@ -15,7 +15,7 @@ import Post from "../../../components/Post";
 import PostButton from "../../../components/PostButton";
 import { useUser } from "../../../userContext";
 
-const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
+const supabaseUrl = "https://cs278proj-23ce60decf86.herokuapp.com";
 export default function Page() {
   const { loggedInUserId, setLoggedInUserId, hostStatus, addPost } = useUser();
   const [data, setData] = useState([]);
@@ -41,13 +41,10 @@ export default function Page() {
         );
         const res = await response.json();
         const res2 = await response2.json();
-        const sortedEvents = res.events.sort(
-          (a, b) => new Date(a.created_at) - new Date(b.created_at)
-        );
 
         // console.log("Fetched event data:", res.events);
 
-        setData(sortedEvents);
+        setData(res.events);
         setUserPosts(res2);
         // console.log(res.events);
         // console.log(res2);

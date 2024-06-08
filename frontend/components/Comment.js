@@ -13,7 +13,7 @@ const formatTime = (dateString) => {
 };
 
 const windowWidth = Dimensions.get("window").width;
-const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
+const supabaseUrl = "https://cs278proj-23ce60decf86.herokuapp.com";
 
 const Comment = ({ username, date, text }) => {
   const formatted_date = formatDate(date) + ", " + formatTime(date);
