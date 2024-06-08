@@ -11,7 +11,7 @@ import { styles } from "../../../assets/Themes/styles";
 import SchedulePost from "../../../components/SchedulePost";
 import { useUser } from "../../../userContext";
 
-const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
+const supabaseUrl = "https://cs278proj-23ce60decf86.herokuapp.com";
 
 export default function Page() {
   const [data, setData] = useState([]);

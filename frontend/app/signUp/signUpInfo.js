@@ -21,7 +21,7 @@ import { uploadImage } from "../../util";
 
 export default function Page() {
   //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
-  const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
+  const supabaseUrl = "https://cs278proj-23ce60decf86.herokuapp.com";
   const { loggedInUserId, setLoggedInUserId } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
@@ -31,6 +31,11 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [selectedId, setSelectedId] = useState();
   const [type, setType] = useState(null);
+  const [emailError, setEmailError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [profilePictureError, setProfilePictureError] = useState("");
+  const [hostStatusError, setHostStatusError] = useState("");
   const radioButtons = useMemo(
     () => [
       {
@@ -60,12 +65,90 @@ export default function Page() {
       const response = result.assets[0];
       setImage(response.uri);
       setType(response.type);
+      setProfilePictureError("");
     }
   };
   let shown = null;
   if (!image) {
     shown = <Entypo name="image" color="gray" size={60} />;
   }
+
+  const validateForm = () => {
+    let isValid = true;
+
+    // Reset error messages
+    setEmailError("");
+    setUsernameError("");
+    setPasswordError("");
+    setHostStatusError("");
+    setProfilePictureError("");
+
+    // Validate email
+    if (!email) {
+      setEmailError("Please enter your Stanford email");
+      isValid = false;
+    }
+
+    // Validate username
+    if (!username) {
+      setUsernameError("Please choose a username");
+      isValid = false;
+    }
+
+    // Validate password
+    if (!password) {
+      setPasswordError("Please enter a password");
+      isValid = false;
+    }
+
+    // Validate host status
+    if (!selectedId) {
+      setHostStatusError("Please select whether you'd like to apply to be a host");
+      isValid = false;
+    }
+
+    // Validate profile picture
+    if (!image) {
+      setProfilePictureError("Please select a profile picture");
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
+  const handleSubmit = async () => {
+    if (validateForm()) {
+      const filepath = await uploadImage(image, username);
+      const params = {
+        email: email,
+        username: username,
+        password: password,
+        hostStatus: selectedId,
+        image: filepath,
+      };
+      const response = await fetch(`${supabaseUrl}/api/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
+      });
+      const data = await response.json();
+      if (response.status === 201) {
+        setLoggedInUserId(username);
+        router.replace("tabs");
+        router.push({
+          pathname: "/tabs",
+        });
+      } else {
+        if (data.error === "Invalid email. Must use a Stanford email.") {
+          setEmailError("This is not a Stanford email. Please try again.");
+        } else if (data.error === "Username already taken") {
+          setUsernameError("This username is taken. Please choose another one.");
+        }
+      }
+    }
+  };
 
   return (
     <ImageBackground
@@ -87,9 +170,12 @@ export default function Page() {
             )}
             {shown}
           </TouchableOpacity>
-          <Text style={[styles.textBody, { marginBottom: 20 }]}>
+          <Text style={[styles.textBody, { marginBottom: 8 }]}>
             profile picture
           </Text>
+          {profilePictureError !== "" && (
+            <Text style={styles.imageErrorMessage}>{profilePictureError}</Text>
+          )}
 
           <View style={styles.newPostInfoContainer}>
             <View style={styles.newPostInfoLabel}>
@@ -104,10 +190,12 @@ export default function Page() {
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
+                setEmailError("");
               }}
               color="white"
               autoCapitalize="none"
-            ></TextInput>
+            />
+            {emailError !== "" && <Text style={styles.errorMessage}>{emailError}</Text>}
           </View>
           <View style={styles.newPostInfoContainer}>
             <View style={styles.newPostInfoLabel}>
@@ -120,10 +208,12 @@ export default function Page() {
               value={username}
               onChangeText={(text) => {
                 setUsername(text);
+                setUsernameError("");
               }}
               color="white"
               autoCapitalize="none"
-            ></TextInput>
+            />
+            {usernameError !== "" && <Text style={styles.errorMessage}>{usernameError}</Text>}
           </View>
           <View style={styles.newPostInfoContainer}>
             <View style={styles.newPostInfoLabel}>
@@ -136,11 +226,13 @@ export default function Page() {
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
+                setPasswordError("");
               }}
               secureTextEntry={true}
               color="white"
               autoCapitalize="none"
             ></TextInput>
+            {passwordError !== "" && <Text style={styles.errorMessage}>{passwordError}</Text>}
           </View>
           <View style={styles.newPostInfoContainer}>
             <Text style={[styles.textBody, { marginLeft: 5 }]}>
@@ -148,12 +240,16 @@ export default function Page() {
             </Text>
             <RadioGroup
               radioButtons={radioButtons}
-              onPress={setSelectedId}
+              onPress={(id) => {
+                setSelectedId(id);
+                setHostStatusError("");
+              }}
               selectedId={selectedId}
               containerStyle={{
                 alignItems: "flex-start",
               }}
             />
+            {hostStatusError !== "" && <Text style={styles.errorMessage}>{hostStatusError}</Text>}
             {selectedId == "pending host" && (
               <Text style={[styles.textBody, { marginLeft: 5 }]}>
                 please fill out our host application form{" "}
@@ -197,32 +293,7 @@ export default function Page() {
           ></CommunityGuidelines>
           <TouchableOpacity
             style={styles.newPostButton}
-            onPress={async () => {
-              const filepath = await uploadImage(image, username);
-              const params = {
-                email: email,
-                username: username,
-                password: password,
-                hostStatus: selectedId,
-                image: filepath,
-              };
-              const response = await fetch(`${supabaseUrl}/api/register`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(params),
-              });
-              setLoggedInUserId(username);
-              if (response.status == 201) {
-                router.replace("tabs");
-                router.push({
-                  pathname: "/tabs",
-                });
-              } else {
-                console.log("no");
-              }
-            }}
+            onPress={handleSubmit}
           >
             <LinearGradient
               colors={["#261372", "#7C2FCA"]}

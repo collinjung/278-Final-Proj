@@ -150,11 +150,6 @@ export const styles = StyleSheet.create({
     marginRight: 5,
     alignContent: "center",
   },
-  passwordTextInput: {
-    width: windowWidth * 0.85,
-    fontFamily: "gill sans",
-    color: "white",
-  },
   postAddEvent: {
     backgroundColor: colors.container,
     height: 30,
@@ -404,4 +399,13 @@ export const styles = StyleSheet.create({
     fontFamily: "gill sans",
     marginBottom: 3,
   },
+  errorMessage: {
+    color: 'red',
+    paddingTop: 5,
+  },
+  imageErrorMessage: {
+    color: 'red',
+    paddingTop: 0,
+    paddingBottom: 8,
+  }
 });

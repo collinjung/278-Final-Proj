@@ -18,14 +18,15 @@ import { styles } from "../assets/Themes/styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUser } from "../userContext";
 
-const supabaseUrl = "https://cs278finalproject-64458b0d2a75.herokuapp.com";
+const supabaseUrl = "https://cs278proj-23ce60decf86.herokuapp.com";
 
 const handleLogin = async (
   username,
   password,
   setHostStatus,
   setLoggedInUserId,
-  setLoggedInUserUUID
+  setLoggedInUserUUID,
+  setErrorMessage
 ) => {
   const params = { username: username, password: password };
   try {
@@ -37,11 +38,13 @@ const handleLogin = async (
       body: JSON.stringify(params),
     });
     const data = await response.json();
-    setLoggedInUserId(username);
-    setLoggedInUserUUID(data.user.id);
-    setHostStatus(data.user.hostStatus);
     if (response.status == 200) {
+      setLoggedInUserId(username);
+      setLoggedInUserUUID(data.user.id);
+      setHostStatus(data.user.hostStatus);
       router.push("/tabs");
+    } else {
+      setErrorMessage("Wrong username or password. Please try again.")
     }
   } catch (e) {
     console.log(e);
@@ -52,6 +55,7 @@ export default function Page() {
   //   const supabaseUrl = "https://otmxnxmybzkluvkwuphs.supabase.co";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const { setLoggedInUserId, setHostStatus, setLoggedInUserUUID } = useUser();
 
   return (
@@ -85,7 +89,7 @@ export default function Page() {
           <View style={styles.commentInputBar}>
             <View style={styles.passwordInputContainer}>
               <TextInput
-                style={styles.passwordTextInput}
+                style={styles.textBody}
                 placeholder={"password"}
                 placeholderTextColor={"gray"}
                 value={password}
@@ -97,6 +101,9 @@ export default function Page() {
               />
             </View>
           </View>
+          {errorMessage !== "" && (
+            <Text style={styles.errorMessage}>{errorMessage}</Text>
+          )}
           <TouchableOpacity
             style={styles.initialLoginButton}
             onPress={() =>
@@ -105,7 +112,8 @@ export default function Page() {
                 password,
                 setHostStatus,
                 setLoggedInUserId,
-                setLoggedInUserUUID
+                setLoggedInUserUUID,
+                setErrorMessage
               )
             }
           >

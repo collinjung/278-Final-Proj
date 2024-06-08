@@ -36,6 +36,11 @@ export default function Page() {
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
   const { loggedInUserId, setAddPost, loggedInUserUUID } = useUser();
+  const [nameError, setNameError] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [reqsError, setReqsError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
+  const [imageError, setImageError] = useState("");
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -82,44 +87,89 @@ export default function Page() {
     setTime(currentTime);
   };
 
+  const validateForm = () => {
+    let isValid = true;
+
+    // Reset error messages
+    setNameError("");
+    setLocationError("");
+    setReqsError("");
+    setDescriptionError("");
+    setImageError("");
+
+    // Validate name
+    if (!name) {
+      setNameError("Please enter an event name.");
+      isValid = false;
+    }
+
+    // Validate location
+    if (!location) {
+      setLocationError("Please enter a location.");
+      isValid = false;
+    }
+
+    // Validate attendee restrictions
+    if (!reqs) {
+      setReqsError("Please enter attendee restrictions.");
+      isValid = false;
+    }
+
+    // Validate description
+    if (!description) {
+      setDescriptionError("Please enter a description.");
+      isValid = false;
+    }
+
+    // Validate image
+    if (!image) {
+      setImageError("Please select an image.");
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handlePost = async () => {
-    try {
-      if (image) {
-        const imageUrl = await uploadImage(image, loggedInUserId);
-        const eventData = {
-          eventName: name,
-          location,
-          date: formatDate(date),
-          time: formatTime(time),
-          attendeeRestrictions: reqs,
-          description,
-          imageUrl,
-          userId: loggedInUserUUID,
-          username: loggedInUserId,
-        };
+    if (validateForm()) {
+      try {
+        if (image) {
+          const imageUrl = await uploadImage(image, loggedInUserId);
+          const eventData = {
+            eventName: name,
+            location,
+            date: formatDate(date),
+            time: formatTime(time),
+            attendeeRestrictions: reqs,
+            description,
+            imageUrl,
+            userId: loggedInUserUUID,
+            username: loggedInUserId,
+          };
 
-        const response = await fetch("https://cs278finalproject-64458b0d2a75.herokuapp.com/api/events", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        });
-
-        if (response.ok) {
-          setAddPost((prevAddPost) => prevAddPost + 1);
-          router.replace("tabs/events/post");
-          router.push({
-            pathname: "/tabs/events",
+          const response = await fetch("https://cs278proj-23ce60decf86.herokuapp.com", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(eventData),
           });
+
+          if (response.ok) {
+            setAddPost((prevAddPost) => prevAddPost + 1);
+            router.replace("tabs/events/post");
+            router.push({
+              pathname: "/tabs/events",
+            });
+          } else {
+            console.error("Failed to create event post");
+          }
         } else {
-          console.error("Failed to create event post");
+          console.error("No image selected");
         }
-      } else {
-        console.error("No image selected");
+      } catch (error) {
+        console.error("Error creating event post:", error);
       }
-    } catch (error) {
-      console.error("Error creating event post:", error);
     }
   };
 
@@ -156,6 +206,7 @@ export default function Page() {
               )}
               {shown}
             </TouchableOpacity>
+            {imageError !== "" && <Text style={styles.imageErrorMessage}>{imageError}</Text>}
             <View style={styles.newPostInfoContainer}>
               <View style={styles.newPostInfoLabel}>
                 <Ionicons
@@ -174,10 +225,12 @@ export default function Page() {
                 multiline={true}
                 onChangeText={(text) => {
                   setName(text);
+                  setNameError("");
                 }}
                 color="white"
                 autoCapitalize="none"
               ></TextInput>
+              {nameError !== "" && <Text style={styles.errorMessage}>{nameError}</Text>}
             </View>
             <View style={styles.newPostInfoContainer}>
               <View style={styles.newPostInfoLabel}>
@@ -197,10 +250,12 @@ export default function Page() {
                 multiline={true}
                 onChangeText={(text) => {
                   setLocation(text);
+                  setLocationError("");
                 }}
                 color="white"
                 autoCapitalize="none"
               ></TextInput>
+              {locationError !== "" && <Text style={styles.errorMessage}>{locationError}</Text>}
             </View>
             <View style={styles.newPostInfoContainer}>
               <View style={styles.newPostInfoLabel}>
@@ -263,10 +318,12 @@ export default function Page() {
                 multiline={true}
                 onChangeText={(text) => {
                   setReqs(text);
+                  setReqsError("");
                 }}
                 color="white"
                 autoCapitalize="none"
               ></TextInput>
+              {reqsError !== "" && <Text style={styles.errorMessage}>{reqsError}</Text>} 
             </View>
             <View style={styles.newPostInfoContainer}>
               <View style={styles.newPostInfoLabel}>
@@ -297,14 +354,16 @@ export default function Page() {
                 multiline={true}
                 onChangeText={(text) => {
                   setDescription(text);
+                  setDescriptionError("");
                 }}
                 color="white"
                 autoCapitalize="none"
               ></TextInput>
+              {descriptionError !== "" && <Text style={styles.errorMessage}>{descriptionError}</Text>}
             </View>
             <View style={styles.newPostInfoContainer}>
               <Text style={[styles.textTitle, { margin: 5 }]}>
-                make sure your post follows our
+                make sure your post follows our{' '} 
                 <Text
                   style={{
                     color: "rgba(124, 47, 202, 0.8)",
